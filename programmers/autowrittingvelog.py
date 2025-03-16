@@ -14,29 +14,12 @@ from selenium.webdriver.chrome.service import Service
 import shutil
 
 if __name__ == '__main__':
-    # 벨로그 접속 및 로그인
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-
-    driver.implicitly_wait(10)
-
-    driver.get('https://velog.io/')
-    time.sleep(1)
-    # 로그인 버튼
-    driver.find_element(By.XPATH, '/html/body/div/div[2]/div[2]/div/header/div/div[2]/button').click()
-    time.sleep(.5)
-
-    # 깃허브 선택
-    driver.find_element(By.XPATH, '/html/body/div/div[3]/div/div[2]/div[2]/div/div[1]/section[2]/div/a[1]').click()
-    time.sleep(.5)
-    # 아이디 비밀번호 입력, 로그인
-    driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/main/div/div[3]/form/input[3]').send_keys('dlsdud9098@naver.com')
-    driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/main/div/div[3]/form/div/input[1]').send_keys('dud7959098@')
-    driver.find_element(By.CSS_SELECTOR, '#login > div.auth-form-body.mt-3 > form > div > input.btn.btn-primary.btn-block.js-sign-in-button').click()
-    time.sleep(10)
-
-    file_paths = glob(r'files/*')
-
-    for file in file_paths:
+    variables = {}
+    
+    file_paths = glob(r'programmers/files/*')
+    # print(file_paths)
+    for id, file in enumerate(file_paths):
+        print(file)
         file_name = os.path.basename(file)[:-3]
         folder, idx = file.split('-')
         
@@ -114,9 +97,9 @@ if __name__ == '__main__':
         result.append('## 💻코드')
         result.append('\n')
         result.append(f'''
-    ```python
-    {code}
-    ```
+```python
+{code}
+```
         ''')
         result.append('\n\n')
 
@@ -130,55 +113,83 @@ if __name__ == '__main__':
         # print(result)
 
         # result
-        velog_content = []
         velog_content_all = ''.join(result)
+        variables[f'page_{id}'] = velog_content_all
+        
+        new_path = os.path.join(folder.replace('files/',''), idx)
+        shutil.move(file, new_path)
+    
+    
+    # 벨로그 접속 및 로그인
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 
-    try:
-        # 글쓰기 버튼
-        driver.find_element(By.XPATH, '/html/body/div/div[2]/div[2]/div/header/div/div[2]/a[3]/button').click()
-    except:
-        driver.find_element(By.XPATH, '/html/body/div/div[2]/div[2]/div/header/div/div[2]/a[3]/button').click()
+    driver.implicitly_wait(10)
 
-    # 제목 쓰기                          
-    ele = driver.find_element(By.XPATH,'/html/body/div[1]/div[2]/div/div[1]/div/div[1]/div[1]/div/textarea')
-    ele.send_keys('프로그래머스 '+title)
-
-    # 태그
-    driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div/div[1]/div/div[1]/div[1]/div/div[2]/div/input').send_keys('프로그래머스, 파이썬,')
-
-    # 내용 쓰기
-    ele = driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div/div[1]/div/div[1]/div[3]/div/div[6]').click()
-    act = ActionChains(driver)
-
-    pyperclip.copy(velog_content_all)
-    act.key_down(Keys.CONTROL).send_keys("v").perform()
-
+    driver.get('https://velog.io/')
     time.sleep(1)
-    # 출간하기 버튼
-    try:
-        driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div/div[1]/div/div[2]/div/div/button[2]').click()
-    except NoSuchElementException:
-        time.sleep(1)
-        driver.find_element(By.CSS_SELECTOR, '#root > div.sc-gLDmcm.giPzuI > div > div.sc-ehCJOs.auvDf > div > div.sc-eLwHnm.BNgcW > div > div > button.sc-jrQzAO.jYsOEX.sc-fvxzrP.hiArGR').click()
-    time.sleep(1)
-
-    # 전체 공개
-    driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/div[1]/section[1]/div/button[1]').click()
-
-    # 시리즈 선택
-    try:
-        driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/div[1]/section[3]/div/button').click()
-    except NoSuchElementException:
-        driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/div[1]/section[3]/div/button').click()
-    time.sleep(1)
-    # 시리즈 선택
-    driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/section/div/div[1]/ul/li[5]').click()
-    time.sleep(1)
-    # 선택하기
-    driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/section/div/div[2]/button[2]').click()
+    # 로그인 버튼
+    driver.find_element(By.XPATH, '/html/body/div/div[2]/div[2]/div/header/div/div[2]/button').click()
     time.sleep(.5)
-    # 출간하기
-    driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/div[2]/button[2]').click()
 
-    new_path = os.path.join(folder.split('/')[1], idx)
-    shutil.move(file, new_path)
+    # 깃허브 선택
+    driver.find_element(By.XPATH, '/html/body/div/div[3]/div/div[2]/div[2]/div/div[1]/section[2]/div/a[1]').click()
+    time.sleep(.5)
+    # 아이디 비밀번호 입력, 로그인
+    driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/main/div/div[3]/form/input[3]').send_keys('dlsdud9098@naver.com')
+    driver.find_element(By.XPATH, '/html/body/div[1]/div[3]/main/div/div[3]/form/div/input[1]').send_keys('dud7959098@')
+    driver.find_element(By.CSS_SELECTOR, '#login > div.auth-form-body.mt-3 > form > div > input.btn.btn-primary.btn-block.js-sign-in-button').click()
+    time.sleep(5)
+    
+    
+    for i in range(len(variables)):
+        velog_content_all = variables[f'page_{i}']
+
+        try:
+            # 글쓰기 버튼
+            driver.find_element(By.XPATH, '/html/body/div/div[2]/div[2]/div/header/div/div[2]/a[3]/button').click()
+        except:
+            driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div[1]/div/div[2]/button').click()
+
+        # 제목 쓰기                          
+        ele = driver.find_element(By.XPATH,'/html/body/div[1]/div[2]/div/div[1]/div/div[1]/div[1]/div/textarea')
+        ele.send_keys('프로그래머스 '+title)
+
+        # 태그
+        driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div/div[1]/div/div[1]/div[1]/div/div[2]/div/input').send_keys('프로그래머스, 파이썬,')
+
+        # 내용 쓰기
+        ele = driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div/div[1]/div/div[1]/div[3]/div/div[6]').click()
+        act = ActionChains(driver)
+
+        pyperclip.copy(velog_content_all)
+        act.key_down(Keys.CONTROL).send_keys("v").perform()
+
+        time.sleep(1)
+        # 출간하기 버튼
+        try:
+            driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div/div[1]/div/div[2]/div/div/button[2]').click()
+        except NoSuchElementException:
+            time.sleep(1)
+            driver.find_element(By.CSS_SELECTOR, '#root > div.sc-gLDmcm.giPzuI > div > div.sc-ehCJOs.auvDf > div > div.sc-eLwHnm.BNgcW > div > div > button.sc-jrQzAO.jYsOEX.sc-fvxzrP.hiArGR').click()
+        time.sleep(1)
+
+        # 전체 공개
+        driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/div[1]/section[1]/div/button[1]').click()
+
+        # 시리즈 선택
+        try:
+            driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/div[1]/section[3]/div/button').click()
+        except NoSuchElementException:
+            driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/div[1]/section[3]/div/button').click()
+        time.sleep(1)
+        # 시리즈 선택
+        driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/section/div/div[1]/ul/li[5]').click()
+        time.sleep(1)
+        # 선택하기
+        driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/section/div/div[2]/button[2]').click()
+        time.sleep(.5)
+        # 출간하기
+        driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/div[2]/button[2]').click()
+        
+        # time.sleep(1)
+        # driver.quit()
