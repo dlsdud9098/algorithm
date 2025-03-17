@@ -152,8 +152,14 @@ if __name__ == '__main__':
             driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div[1]/div/div[2]/button').click()
 
         # 제목 쓰기                          
-        ele = driver.find_element(By.XPATH,'/html/body/div[1]/div[2]/div/div[1]/div/div[1]/div[1]/div/textarea').click()
-        ele.send_keys('프로그래머스 '+title)
+        driver.find_element(By.XPATH,'/html/body/div[1]/div[2]/div/div[1]/div/div[1]/div[1]/div/textarea').click()
+        time.sleep(3)
+        ele = driver.find_element(By.XPATH,'/html/body/div[1]/div[2]/div/div[1]/div/div[1]/div[1]/div/textarea')
+        act = ActionChains(driver)
+        
+        pyperclip.copy('프로그래머스 '+title)
+        act.key_down(Keys.CONTROL).send_keys('v').perform()
+        # ele.send_keys()
 
         # 태그
         driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div/div[1]/div/div[1]/div[1]/div/div[2]/div/input').send_keys('프로그래머스, 파이썬,')
