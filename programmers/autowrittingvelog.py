@@ -114,7 +114,7 @@ if __name__ == '__main__':
 
         # result
         velog_content_all = ''.join(result)
-        variables[f'page_{id}'] = velog_content_all
+        variables[f'page_{id}'] = (title, velog_content_all)
         
         new_path = os.path.join(folder.replace('files/',''), idx)
         shutil.move(file, new_path)
@@ -142,7 +142,8 @@ if __name__ == '__main__':
     
     
     for i in range(len(variables)):
-        velog_content_all = variables[f'page_{i}']
+        title, velog_content_all = variables[f'page_{i}']
+        print(title)
 
         try:
             # 글쓰기 버튼
@@ -151,7 +152,7 @@ if __name__ == '__main__':
             driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div[1]/div/div[2]/button').click()
 
         # 제목 쓰기                          
-        ele = driver.find_element(By.XPATH,'/html/body/div[1]/div[2]/div/div[1]/div/div[1]/div[1]/div/textarea')
+        ele = driver.find_element(By.XPATH,'/html/body/div[1]/div[2]/div/div[1]/div/div[1]/div[1]/div/textarea').click()
         ele.send_keys('프로그래머스 '+title)
 
         # 태그
