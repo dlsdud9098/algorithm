@@ -93,8 +93,12 @@ if __name__ == '__main__':
     if n % w != 0:
         rows += 1
 
-    
+
+    # row_line -= 1
+    # rows -= 1
+
     print(f'현재 위치: {row_line}행에 위치해 있고 그 행의 수는 {rows}칸')
+
 
     # 열 위치 찾기
     # 정방향 (왼 -> 오), 1 3 5 7 9 ...
@@ -104,12 +108,9 @@ if __name__ == '__main__':
     else:
         column = w - (num - 1) % w - 1
 
-    if w * column > n:
-        rows -= 1
-        
     storage = []
     
-    for r in range(1, rows):
+    for r in range(rows):
         # 짝수 행 
         if r % 2 == 0:
             '''
@@ -142,3 +143,15 @@ if __name__ == '__main__':
     print(storage)
 
     print(len(storage) - storage.index(num))
+
+    print('='*20)
+
+    rows = n // w
+    if n % w > 0:
+        rows += 1
+
+    print(rows)
+
+    col = num // w - 1
+
+    print(col)
