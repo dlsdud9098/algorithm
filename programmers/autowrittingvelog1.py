@@ -1,28 +1,23 @@
+import undetected_chromedriver as uc
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
 import requests
 from bs4 import BeautifulSoup
 import os
 from glob import glob
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.common.by import By
-from selenium import webdriver
 import time
-from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.common.action_chains import ActionChains
 import pyperclip
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from markdownify import MarkdownConverter
 import shutil
+import random
 
-if __name__ == '__main__':
+def crawl_data():
     variables = {}
     
-    file_paths = glob(r'programmers/files/*.py')
-    # print(file_paths)
+    file_paths = glob('files/*.py')
     for id, file in enumerate(file_paths):
-        print('1', file)
         file_name = os.path.basename(file)[:-3]
         folder, idx = file.split('-')
         
@@ -84,7 +79,6 @@ if __name__ == '__main__':
             if '</table>' in con:
                 con = con.replace('</table>', '\n</table>\n')
 
-
             if '문제 설명' in con:
                 con = con.replace('## 문제 설명', '## 💡문제 설명\n')
             if '제한사항' in con:
@@ -95,7 +89,6 @@ if __name__ == '__main__':
                 con = con.replace('## 입출력 예', '## 🔢입출력 예\n\n')
             if '테스트 케이스 구성 안내' in con:
                 con = con.replace('## 테스트 케이스 구성 안내', '## 테스트 케이스 구성 안내\n\n')
-            
 
             result.append(con)
 
@@ -109,65 +102,91 @@ if __name__ == '__main__':
         ''')
         result.append('\n\n')
 
-
         # 맨 처음에 사진 추가하기
         result.insert(0, '![](https://velog.velcdn.com/images/dlsdud9098/post/e1464da6-734f-4172-a5d3-8df73b71a328/image.png)')
 
         # 해당 문제 링크 추가
         result.append(url.replace('.py', '?language=python3'))
 
-        # print(result)
-
         # result
         velog_content_all = ''.join(result)
         variables[f'page_{id}'] = (title, velog_content_all)
         
-        new_path = os.path.join(folder.replace('files/',''), idx)
-        shutil.move(file, new_path)
-    
-    
-    # ChromeDriver 자동 설치 및 초기화
-    options = webdriver.ChromeOptions()
-    options.add_argument("--window-size=1280,720")  # 가로 1280px, 세로 720px
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+        new_path = './uploads'
+        if not os.path.exists(new_path):
+            os.makedirs(new_path)
+        file_name = os.path.basename(file)
+        new_file_path = os.path.join(new_path, file_name)
+        shutil.move(file, new_file_path)
 
-    # 벨로그 접속 및 로그인
-    # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+    return variables
 
+def create_undetected_driver():
+    """Undetected Chrome 드라이버 생성"""
+    print("Undetected Chrome 드라이버를 생성하는 중...")
+    
+    # 옵션 설정
+    options = uc.ChromeOptions()
+    options.add_argument("--window-size=1280,720")
+    options.add_argument("--no-first-run")
+    options.add_argument("--disable-extensions")
+    options.add_argument("--disable-default-apps")
+    options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
+    
+    # Undetected Chrome 드라이버 생성
+    driver = uc.Chrome(options=options, version_main=None)
     driver.implicitly_wait(10)
+    
+    print("드라이버 생성 완료!")
+    return driver
+
+def google_login(driver):
 
     driver.get('https://velog.io/')
-    time.sleep(1)
-    # 로그인 버튼
-    driver.find_element(By.XPATH, '/html/body/div/div[2]/div[2]/div/header/div/div[2]/button').click()
-    time.sleep(.5)
+    # driver.get('https://v3.velog.io/api/auth/v3/social/redirect/google?next=&isIntegrate=0')
 
-    # 구글 선택
-    driver.find_element(By.XPATH, '/html/body/div/div[3]/div/div[2]/div[2]/div/div[1]/section[2]/div/a[2]').click()
-    time.sleep(.5)
-    # 아이디 비밀번호 입력, 로그인
-    driver.find_element(By.CSS_SELECTOR, '#identifierId').send_keys('remember33330')
-    # time.sleep(10)
-    # 로그인
+    # 로그인 버튼
     WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/div[1]/div[2]/c-wiz/div/div[3]/div/div[1]/div/div/button'))
+        EC.presence_of_element_located((By.XPATH, '//*[@id="html"]/body/div/div[2]/div[2]/div/header/div/div[2]/button'))
     ).click()
 
-
-    # time.sleep(5)
-    # 시리즈 선택
+    # 구글 선택
     WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, '#identifierNext > div > button'))
-    )
+        EC.presence_of_element_located((By.XPATH, '//*[@id="html"]/body/div/div[3]/div/div[2]/div[2]/div/div[1]/section[2]/div/a[2]'))
+    ).click()
+
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, '/html/body/div[1]/div[1]/div[2]/c-wiz/div/div[2]/div/div/div[1]/form/span/section/div/div/div[1]/div/div[1]/div/div[1]/input'))
+    ).send_keys('remember33330')
+
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, '/html/body/div[1]/div[1]/div[2]/c-wiz/div/div[3]/div/div[1]/div/div/button'))
+    ).click()
+
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, '//*[@id="password"]/div[1]/div/div[1]/input'))
+    ).send_keys('tmddlf795')
+    time.sleep(.5)
+
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, '//*[@id="passwordNext"]/div/button'))
+    ).click()
+
     
-    
+
+def write_content(driver, variables):
     for i in range(len(variables)):
         title, velog_content_all = variables[f'page_{i}']
         print(title)
 
-        driver.get('https://velog.io/write')
-            
+        # driver.get('https://velog.io/')
+        
+        WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, '//*[@id="html"]/body/div/div[2]/div[2]/div/header/div/div[2]/a[3]'))
+        ).click()
 
+        # driver.get('https://velog.io/write')
+            
         # 제목 쓰기                          
         ele = driver.find_element(By.XPATH,'/html/body/div[1]/div[2]/div/div[1]/div/div[1]/div[1]/div/textarea').click()
         act = ActionChains(driver)
@@ -204,15 +223,21 @@ if __name__ == '__main__':
             EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/div[1]/section[1]/div/button[1]'))
         ).click()
 
+        time.sleep(1)
+        # actions = ActionChains(driver)
+        # actions.send_keys(Keys.ESCAPE).perform()
+
         # 시리즈 선택
         WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/div[1]/section[3]/div/button'))
+            EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/div[2]/div[2]/div/div[3]/div[1]/section[3]/div/button'))
         ).click()
+        time.sleep(1)
 
         # 프로그래머스 선택
         WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/section/div/div[1]/ul/li[5]'))
+            EC.element_to_be_clickable((By.XPATH, "//li[text()='프로그래머스']"))
         ).click()
+        time.sleep(1)
 
         # 선택하기
         WebDriverWait(driver, 10).until(
@@ -223,5 +248,12 @@ if __name__ == '__main__':
         WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/div[2]/button[2]'))
         ).click()
+    
 
-    driver.quit()
+if __name__ == '__main__':
+    variables = crawl_data()
+    driver = create_undetected_driver()
+
+    google_login(driver)
+    # time.sleep(10)
+    write_content(driver, variables)
