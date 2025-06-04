@@ -4,4 +4,12 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "bs4>=0.0.2",
+    "ipykernel>=6.29.5",
+    "markdownify>=1.1.0",
+    "pyperclip>=1.9.0",
+    "requests>=2.32.3",
+    "selenium>=4.33.0",
+    "webdriver-manager>=4.0.2",
+]
