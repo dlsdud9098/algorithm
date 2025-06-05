@@ -12,11 +12,16 @@ import time
 import pyperclip
 import shutil
 import random
+from seleniumbase import SB
+from selenium_stealth import stealth
+from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
 
 def crawl_data():
     variables = {}
     
-    file_paths = glob('files/*.py')
+    file_paths = glob('programmers/files/*.py')
     for id, file in enumerate(file_paths):
         file_name = os.path.basename(file)[:-3]
         folder, idx = file.split('-')
@@ -126,41 +131,47 @@ def create_undetected_driver():
     print("Undetected Chrome 드라이버를 생성하는 중...")
     
     # 옵션 설정
-    options = uc.ChromeOptions()
+    options = webdriver.ChromeOptions()
     options.add_argument("--window-size=1280,720")
-    options.add_argument("--no-first-run")
-    options.add_argument("--disable-extensions")
-    options.add_argument("--disable-default-apps")
     options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option('useAutomationExtension', False)
     
     # Undetected Chrome 드라이버 생성
-    driver = uc.Chrome(options=options, version_main=None)
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     driver.implicitly_wait(10)
+
+    with SB(test=True, uc=True) as sb:
+        sb.open("https://google.com/ncr")
+        sb.type('[title="Search"]', "SeleniumBase GitHub page\n")
+        sb.click('[href*="github.com/seleniumbase/"]')
+        sb.save_screenshot_to_logs()  # ./latest_logs/
+        print(sb.get_page_title())
     
     print("드라이버 생성 완료!")
     return driver
 
 def google_login(driver):
 
-    driver.get('https://velog.io/')
-    # driver.get('https://v3.velog.io/api/auth/v3/social/redirect/google?next=&isIntegrate=0')
+    driver.get('https://v3.velog.io/api/auth/v3/social/redirect/google?next=&isIntegrate=0')
+
 
     # 로그인 버튼
-    WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, '//*[@id="html"]/body/div/div[2]/div[2]/div/header/div/div[2]/button'))
-    ).click()
+    # WebDriverWait(driver, 10).until(
+    #     EC.element_to_be_clickable((By.XPATH, '//*[@id="html"]/body/div/div[2]/div[2]/div/header/div/div[2]/button'))
+    # ).click()
 
     # 구글 선택
-    WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, '//*[@id="html"]/body/div/div[3]/div/div[2]/div[2]/div/div[1]/section[2]/div/a[2]'))
-    ).click()
+    # WebDriverWait(driver, 10).until(
+    #     EC.element_to_be_clickable((By.XPATH, '//*[@id="html"]/body/div/div[3]/div/div[2]/div[2]/div/div[1]/section[2]/div/a[2]'))
+    # ).click()
 
     WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.XPATH, '/html/body/div[1]/div[1]/div[2]/c-wiz/div/div[2]/div/div/div[1]/form/span/section/div/div/div[1]/div/div[1]/div/div[1]/input'))
     ).send_keys('remember33330')
 
     WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, '/html/body/div[1]/div[1]/div[2]/c-wiz/div/div[3]/div/div[1]/div/div/button'))
+        EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/div[1]/div[2]/c-wiz/div/div[3]/div/div[1]/div/div/button'))
     ).click()
 
     WebDriverWait(driver, 10).until(
@@ -169,24 +180,23 @@ def google_login(driver):
     time.sleep(.5)
 
     WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, '//*[@id="passwordNext"]/div/button'))
+        EC.element_to_be_clickable((By.XPATH, '//*[@id="passwordNext"]/div/button'))
     ).click()
 
-    
+    WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, '//*[@id="html"]/body/div/div[2]/div[2]/div/header/div/div[2]/a[3]'))
+    )
 
+    driver.get('https://velog.io/')
 def write_content(driver, variables):
     for i in range(len(variables)):
         title, velog_content_all = variables[f'page_{i}']
         print(title)
-
-        # driver.get('https://velog.io/')
         
         WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, '//*[@id="html"]/body/div/div[2]/div[2]/div/header/div/div[2]/a[3]'))
+            EC.element_to_be_clickable((By.XPATH, '//*[@id="html"]/body/div/div[2]/div[2]/div/header/div/div[2]/a[3]/button'))
         ).click()
 
-        # driver.get('https://velog.io/write')
-            
         # 제목 쓰기                          
         ele = driver.find_element(By.XPATH,'/html/body/div[1]/div[2]/div/div[1]/div/div[1]/div[1]/div/textarea').click()
         act = ActionChains(driver)
@@ -216,16 +226,14 @@ def write_content(driver, variables):
             ).click()
         # 전체 공개
 
-        WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/div[1]/section[1]/div/button[2]'))
-        ).click()
-        WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/div[1]/section[1]/div/button[1]'))
-        ).click()
+        # WebDriverWait(driver, 10).until(
+        #     EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/div[1]/section[1]/div/button[2]'))
+        # ).click()
+        # WebDriverWait(driver, 10).until(
+        #     EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/div[1]/section[1]/div/button[1]'))
+        # ).click()
 
         time.sleep(1)
-        # actions = ActionChains(driver)
-        # actions.send_keys(Keys.ESCAPE).perform()
 
         # 시리즈 선택
         WebDriverWait(driver, 10).until(
@@ -241,13 +249,15 @@ def write_content(driver, variables):
 
         # 선택하기
         WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/section/div/div[2]/button[2]'))
+            EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/section/div/div[2]/button[2]'))
         ).click()
 
         # 출간하기
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/div[2]/button[2]'))
         ).click()
+        # element = driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/div[2]/button[2]')
+        # driver.execute_script('arguments[0].click();', element)
     
 
 if __name__ == '__main__':

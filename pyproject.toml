@@ -12,6 +12,7 @@ dependencies = [
     "pyperclip>=1.9.0",
     "requests>=2.32.3",
     "selenium>=4.33.0",
-    "undetected-chromedriver>=3.5.5",
+    "selenium-stealth>=1.0.6",
+    "seleniumbase>=4.39.2",
     "webdriver-manager>=4.0.2",
 ]

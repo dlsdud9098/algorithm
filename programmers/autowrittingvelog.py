@@ -6,14 +6,12 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from selenium import webdriver
 import time
-from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
 import pyperclip
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from markdownify import MarkdownConverter
 import shutil
 
 if __name__ == '__main__':
@@ -213,6 +211,8 @@ if __name__ == '__main__':
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, '/html/body/div[1]/div[2]/div[2]/div/div[3]/section/div/div[2]/button[2]'))
         ).click()
+
+    
 
         # 출간하기
         WebDriverWait(driver, 10).until(
